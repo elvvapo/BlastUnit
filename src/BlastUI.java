@@ -1,4 +1,6 @@
 
+import com.sun.org.apache.regexp.internal.RE;
+import com.sun.org.apache.regexp.internal.RESyntaxException;
 import javax.swing.JOptionPane;
 
 /**
@@ -11,7 +13,7 @@ public class BlastUI extends javax.swing.JFrame {
     private static final String APP_Version = "Version 1.0";
     private static final int TYPE_DNA = 0;
     private static final int TYPE_RNA = 1;
-    private static final int TYPE_Protein = 2;
+    private static final int TYPE_PROTEIN = 2;
     private static final double SEQ_TRESHOLD = .85;
 
     /**
@@ -279,24 +281,23 @@ public class BlastUI extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void run_seqActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_seqActionPerformed
-      //Grab the text from the input area
-        
-        
-          String seqText = seqArea.getText();
+        //Grab the text from the input area
+
+
+        String seqText = seqArea.getText();
         int index = seqText.indexOf(">");
 
         //if the first character isnt a >, then the string isnt in fasta
         boolean isFastaFormat = index != -1;
-        int count =0;
+        int count = 0;
         String header = "";
         int seqLength = 0;
         String sequence = "";
         String fastaSeq = "";
-
+        String type;
+        String unitLength;
         //is it in fasta format?
-        if (isFastaFormat) {
-            count++;
-            //if it is in fasta format, just grab the sequence
+        if (isFastaFormat) {            //if it is in fasta format, just grab the sequence
             int returnIndex = seqText.indexOf("\n");
             //
             header = seqText.substring(0, returnIndex);
@@ -305,38 +306,60 @@ public class BlastUI extends javax.swing.JFrame {
         } else {
             seqText = seqText.replaceAll("\\s", "");
             fastaSeq = seqText.toLowerCase();
-            header = "> Sequence " + count;
+            header = "> Sequence test" + count;
             seqLength = seqText.length();
         }
-        if (!isFastaFormat) {
-            fastaSeq = header + " | " + seqLength + "\n" + fastaSeq;
+         int typeOfSeq = -1;
+        try {
+            typeOfSeq = this.isType(sequence);
+        } catch (RESyntaxException el) {
+            el.printStackTrace();
+
         }
+         switch (typeOfSeq) {
+            case TYPE_DNA:
+                type = "DNA";
+                unitLength = " bp";
+                break;
+            case TYPE_RNA:
+                type ="RNA";
+                unitLength = " bp";
+                break;
+            case TYPE_PROTEIN:
+                type="Protein";
+                unitLength = " aa";
+                break;
+            default:
+                type = "N/A";
+                unitLength = " N/A";
+        }
+        if (!isFastaFormat) {
+            fastaSeq = header + type +" | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
+        }
+
+       
+
+       
         seqArea.setText(fastaSeq);
         /*
-        String seqText = seqArea.getText();
-        
-        //convert the input into FASTA
-        String header = null;
-        int seqLength = 0;
-        String sequence = "";
-        String fastaSeq = "";
-        int count = 0;
-
-        //format our inputs. First, it removes all white spaces.
-        //then, it changes everything to lower case.
-        //Then it adds the header to the sequence
-        // finally, it adds the sequence length to the header
-        seqText = seqText.replaceAll("\\s", "");
-        sequence = seqText.toLowerCase();
-        header = "> Sequence " + count;
-        seqLength = seqText.length();
-        fastaSeq = header + " | " + seqLength + "\n" + sequence;
-
-        //paste the fasta sequence into our textbox
-
-        seqArea.setText(fastaSeq);
+         * String seqText = seqArea.getText();
+         *
+         * //convert the input into FASTA String header = null; int seqLength =
+         * 0; String sequence = ""; String fastaSeq = ""; int count = 0;
+         *
+         * //format our inputs. First, it removes all white spaces. //then, it
+         * changes everything to lower case. //Then it adds the header to the
+         * sequence // finally, it adds the sequence length to the header
+         * seqText = seqText.replaceAll("\\s", ""); sequence =
+         * seqText.toLowerCase(); header = "> Sequence " + count; seqLength =
+         * seqText.length(); fastaSeq = header + " | " + seqLength + "\n" +
+         * sequence;
+         *
+         * //paste the fasta sequence into our textbox
+         *
+         * seqArea.setText(fastaSeq);
          */
-      
+
     }//GEN-LAST:event_run_seqActionPerformed
 
     private void blastN_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blastN_buttonActionPerformed
@@ -344,19 +367,108 @@ public class BlastUI extends javax.swing.JFrame {
     }//GEN-LAST:event_blastN_buttonActionPerformed
 
     private void seqAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusGained
-
-  
     }//GEN-LAST:event_seqAreaFocusGained
 
-    private void is
+    private int isType(String sequence) throws RESyntaxException {
+        RE re = new RE("[acgtnACGTN]+");
+        String[] strings = re.split(sequence); //split the string into an array based on the reg expression
+        int notATCGN = 0;
+
+        for (int i = 0; i < strings.length; i++) {
+            notATCGN += strings[i].length();
+        }
+
+        int length = sequence.length();
+
+        int nucleotides = length - notATCGN;
+
+        re = new RE("[uU]+");
+
+        strings = re.split(sequence);
+
+        int notUs = 0;
+
+        for (int i = 0; i < strings.length; i++) {
+            notUs += strings[i].length();
+        }
+
+        int numUs = sequence.length() - notUs;
+
+        if (nucleotides / (double) length > SEQ_TRESHOLD) {
+            return TYPE_DNA;
+        } else if ((nucleotides + numUs) / (double) length > SEQ_TRESHOLD) {
+            return TYPE_RNA;
+        } else {
+            return TYPE_PROTEIN;
+        }
+    }
+
     private void seqAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusLost
         //grab the text from the inputbox
+           String seqText = seqArea.getText();
+        int index = seqText.indexOf(">");
+
+        //if the first character isnt a >, then the string isnt in fasta
+        boolean isFastaFormat = index != -1;
+        int count = 0;
+        String header = "";
+        int seqLength = 0;
+        String sequence = "";
+        String fastaSeq = "";
+        String type;
+        String unitLength;
+        //is it in fasta format?
+        if (isFastaFormat) {            //if it is in fasta format, just grab the sequence
+            int returnIndex = seqText.indexOf("\n");
+            //
+            header = seqText.substring(0, returnIndex);
+            fastaSeq = seqText.substring(returnIndex + 1, seqText.length()).replaceAll("\\s", "").toLowerCase();
+            fastaSeq = seqText;
+        } else {
+            seqText = seqText.replaceAll("\\s", "");
+            fastaSeq = seqText.toLowerCase();
+            header = "> Sequence Uno | ";
+            seqLength = seqText.length();
+        }
+         int typeOfSeq = -1;
+        try {
+            typeOfSeq = this.isType(sequence);
+        } catch (RESyntaxException el) {
+            el.printStackTrace();
+
+        }
+         switch (typeOfSeq) {
+            case TYPE_DNA:
+                type = "DNA";
+                unitLength = " bp";
+                break;
+            case TYPE_RNA:
+                type ="RNA";
+                unitLength = " bp";
+                break;
+            case TYPE_PROTEIN:
+                type="Protein";
+                unitLength = " aa";
+                break;
+            default:
+                type = "N/A";
+                unitLength = " N/A";
+        }
+        if (!isFastaFormat) {
+            fastaSeq = header + type +" | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
+        }
+
+       
+
+       
+        seqArea.setText(fastaSeq);
+        /*
         String seqText = seqArea.getText();
         int index = seqText.indexOf(">");
 
         //if the first character isnt a >, then the string isnt in fasta
         boolean isFastaFormat = index != -1;
-        int count =0;
+        int count = 0;
         String header = "";
         int seqLength = 0;
         String sequence = "";
@@ -381,7 +493,7 @@ public class BlastUI extends javax.swing.JFrame {
             fastaSeq = header + " | " + seqLength + "\n" + fastaSeq;
         }
         seqArea.setText(fastaSeq);
-
+*/
     }//GEN-LAST:event_seqAreaFocusLost
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
