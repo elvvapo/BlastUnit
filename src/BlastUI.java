@@ -96,19 +96,24 @@ public class BlastUI extends javax.swing.JFrame {
         });
 
         program_label.setFont(new java.awt.Font("Trebuchet MS", 1, 12)); // NOI18N
-        program_label.setText("Program");
+        program_label.setText("Program:");
 
         db_label.setFont(new java.awt.Font("Trebuchet MS", 1, 12)); // NOI18N
-        db_label.setText("Database");
+        db_label.setText("Database:");
 
         evalue_label.setFont(new java.awt.Font("Trebuchet MS", 1, 12)); // NOI18N
-        evalue_label.setText("E-value");
+        evalue_label.setText("E-value:");
 
         status_label.setText("Status: Ready");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "nr", "refseq" }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { ".01", ".001", ".0001", ".00001" }));
 
         program_select.add(blastN_button);
         blastN_button.setText("BlastN");
@@ -131,6 +136,11 @@ public class BlastUI extends javax.swing.JFrame {
         tblastn_button.setText("TBlastN");
 
         clear_button.setText("Clear");
+        clear_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clear_buttonActionPerformed(evt);
+            }
+        });
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("Sequence Form");
@@ -215,7 +225,7 @@ public class BlastUI extends javax.swing.JFrame {
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(86, 86, 86)
                                         .addComponent(run_seq, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 79, Short.MAX_VALUE)))
+                                .addGap(0, 73, Short.MAX_VALUE)))
                         .addGap(111, 111, 111))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(status_label)
@@ -269,48 +279,15 @@ public class BlastUI extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void run_seqActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_seqActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_run_seqActionPerformed
-
-    private void blastN_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blastN_buttonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_blastN_buttonActionPerformed
-
-    private void seqAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusGained
-
-        //Grab the text from the input area
-        String seqText = seqArea.getText();
-
-        //convert the input into FASTA
-        String header = null;
-        int seqLength = 0;
-        String sequence = "";
-        String fastaSeq = "";
-
-        //format our inputs. First, it removes all white spaces.
-        //then, it changes everything to lower case.
-        //Then it adds the header to the sequence
-        // finally, it adds the sequence length to the header
-        seqText = seqText.replaceAll("\\s", "");
-        sequence = seqText.toLowerCase();
-        header = "> Sequence 1";
-        seqLength = seqText.length();
-        fastaSeq = header + " | " + seqLength + "\n" + sequence;
-
-        //paste the fasta sequence into our textbox
-
-        seqArea.setText(fastaSeq);
-         
+      //Grab the text from the input area
         
-    }//GEN-LAST:event_seqAreaFocusGained
-
-    private void seqAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusLost
-        //grab the text from the inputbox
-        String seqText = seqArea.getText();
+        
+          String seqText = seqArea.getText();
         int index = seqText.indexOf(">");
 
         //if the first character isnt a >, then the string isnt in fasta
         boolean isFastaFormat = index != -1;
+        int count =0;
         String header = "";
         int seqLength = 0;
         String sequence = "";
@@ -318,7 +295,7 @@ public class BlastUI extends javax.swing.JFrame {
 
         //is it in fasta format?
         if (isFastaFormat) {
-
+            count++;
             //if it is in fasta format, just grab the sequence
             int returnIndex = seqText.indexOf("\n");
             //
@@ -328,7 +305,76 @@ public class BlastUI extends javax.swing.JFrame {
         } else {
             seqText = seqText.replaceAll("\\s", "");
             fastaSeq = seqText.toLowerCase();
-            header = "> Sequence 1";
+            header = "> Sequence " + count;
+            seqLength = seqText.length();
+        }
+        if (!isFastaFormat) {
+            fastaSeq = header + " | " + seqLength + "\n" + fastaSeq;
+        }
+        seqArea.setText(fastaSeq);
+        /*
+        String seqText = seqArea.getText();
+        
+        //convert the input into FASTA
+        String header = null;
+        int seqLength = 0;
+        String sequence = "";
+        String fastaSeq = "";
+        int count = 0;
+
+        //format our inputs. First, it removes all white spaces.
+        //then, it changes everything to lower case.
+        //Then it adds the header to the sequence
+        // finally, it adds the sequence length to the header
+        seqText = seqText.replaceAll("\\s", "");
+        sequence = seqText.toLowerCase();
+        header = "> Sequence " + count;
+        seqLength = seqText.length();
+        fastaSeq = header + " | " + seqLength + "\n" + sequence;
+
+        //paste the fasta sequence into our textbox
+
+        seqArea.setText(fastaSeq);
+         */
+      
+    }//GEN-LAST:event_run_seqActionPerformed
+
+    private void blastN_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blastN_buttonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_blastN_buttonActionPerformed
+
+    private void seqAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusGained
+
+  
+    }//GEN-LAST:event_seqAreaFocusGained
+
+    private void is
+    private void seqAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusLost
+        //grab the text from the inputbox
+        String seqText = seqArea.getText();
+        int index = seqText.indexOf(">");
+
+        //if the first character isnt a >, then the string isnt in fasta
+        boolean isFastaFormat = index != -1;
+        int count =0;
+        String header = "";
+        int seqLength = 0;
+        String sequence = "";
+        String fastaSeq = "";
+
+        //is it in fasta format?
+        if (isFastaFormat) {
+            count++;
+            //if it is in fasta format, just grab the sequence
+            int returnIndex = seqText.indexOf("\n");
+            //
+            header = seqText.substring(0, returnIndex);
+            fastaSeq = seqText.substring(returnIndex + 1, seqText.length()).replaceAll("\\s", "").toLowerCase();
+            fastaSeq = seqText;
+        } else {
+            seqText = seqText.replaceAll("\\s", "");
+            fastaSeq = seqText.toLowerCase();
+            header = "> Sequence " + count;
             seqLength = seqText.length();
         }
         if (!isFastaFormat) {
@@ -343,6 +389,14 @@ public class BlastUI extends javax.swing.JFrame {
                 "About " + APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 
     }//GEN-LAST:event_aboutMenuItemActionPerformed
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void clear_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clear_buttonActionPerformed
+        seqArea.setText("");
+    }//GEN-LAST:event_clear_buttonActionPerformed
     /**
      * @param args the command line arguments
      */
