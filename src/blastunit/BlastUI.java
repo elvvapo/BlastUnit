@@ -1,3 +1,4 @@
+package blastunit;
 
 import com.sun.org.apache.regexp.internal.RE;
 import com.sun.org.apache.regexp.internal.RESyntaxException;
@@ -22,14 +23,15 @@ public class BlastUI extends javax.swing.JFrame {
     public BlastUI() {
         super();
         initComponents();
+        this.enableButtons(9); //set default buttons to none
     }
 
-    public static void main(String args[]) {
+    public static void RunProgram() {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new BlastUI().setVisible(true);
+                new BlastUI().setVisible(true);;
             }
         });
 
@@ -108,7 +110,7 @@ public class BlastUI extends javax.swing.JFrame {
 
         status_label.setText("Status: Ready");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "nr", "refseq" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "nr", "human" }));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -288,8 +290,12 @@ public class BlastUI extends javax.swing.JFrame {
         int index = seqText.indexOf(">");
 
         //if the first character isnt a >, then the string isnt in fasta
-        boolean isFastaFormat = index != -1;
-        int count = 0;
+        boolean isFastaFormat;
+        if(index == 0){
+            isFastaFormat = true;
+        }
+        else isFastaFormat = false;
+           
         String header = "";
         int seqLength = 0;
         String sequence = "";
@@ -297,36 +303,47 @@ public class BlastUI extends javax.swing.JFrame {
         String type;
         String unitLength;
         //is it in fasta format?
-        if (isFastaFormat) {            //if it is in fasta format, just grab the sequence
+        if (isFastaFormat == true) {            //if it is in fasta format, just grab the sequence
             int returnIndex = seqText.indexOf("\n");
-            //
+            System.out.println("Sequence is in fasta format already!");
+            System.out.println("ReturnIndex of : " + returnIndex);
+            
             header = seqText.substring(0, returnIndex);
+            
+            System.out.println("header of of : " + header);
             fastaSeq = seqText.substring(returnIndex + 1, seqText.length()).replaceAll("\\s", "").toLowerCase();
-            fastaSeq = seqText;
+           // fastaSeq = seqText;
+            
+            System.out.println("fastaseq of : " + fastaSeq);
         } else {
+            
+            System.out.println("Sequence isnt in fasta!");
             seqText = seqText.replaceAll("\\s", "");
             fastaSeq = seqText.toLowerCase();
-            header = "> Sequence test" + count;
+            header = "> Sequence test |";
             seqLength = seqText.length();
+            
         }
-         int typeOfSeq = -1;
-        try {
-            typeOfSeq = this.isType(sequence);
-        } catch (RESyntaxException el) {
-            el.printStackTrace();
+        
+         System.out.println("FastaSeq: " + fastaSeq);
+        int typeOfSeq;
+       // try {
+            typeOfSeq = this.isType(fastaSeq);
+       // } catch (RESyntaxException exception) {
+          //  exception.printStackTrace();
 
-        }
-         switch (typeOfSeq) {
+       // }
+        switch (typeOfSeq) {
             case TYPE_DNA:
                 type = "DNA";
                 unitLength = " bp";
                 break;
             case TYPE_RNA:
-                type ="RNA";
+                type = "RNA";
                 unitLength = " bp";
                 break;
             case TYPE_PROTEIN:
-                type="Protein";
+                type = "Protein";
                 unitLength = " aa";
                 break;
             default:
@@ -334,12 +351,14 @@ public class BlastUI extends javax.swing.JFrame {
                 unitLength = " N/A";
         }
         if (!isFastaFormat) {
-            fastaSeq = header + type +" | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
+            System.out.println(" we are checking if we are in fasta seq again! : ");
+            
+            fastaSeq = header + type + " | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
         }
 
-       
 
-       
+
+
         seqArea.setText(fastaSeq);
         /*
          * String seqText = seqArea.getText();
@@ -405,7 +424,7 @@ public class BlastUI extends javax.swing.JFrame {
 
     private void seqAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_seqAreaFocusLost
         //grab the text from the inputbox
-           String seqText = seqArea.getText();
+        String seqText = seqArea.getText();
         int index = seqText.indexOf(">");
 
         //if the first character isnt a >, then the string isnt in fasta
@@ -430,24 +449,24 @@ public class BlastUI extends javax.swing.JFrame {
             header = "> Sequence Uno | ";
             seqLength = seqText.length();
         }
-         int typeOfSeq = -1;
+        int typeOfSeq = -1;
         try {
             typeOfSeq = this.isType(sequence);
         } catch (RESyntaxException el) {
             el.printStackTrace();
 
         }
-         switch (typeOfSeq) {
+        switch (typeOfSeq) {
             case TYPE_DNA:
                 type = "DNA";
                 unitLength = " bp";
                 break;
             case TYPE_RNA:
-                type ="RNA";
+                type = "RNA";
                 unitLength = " bp";
                 break;
             case TYPE_PROTEIN:
-                type="Protein";
+                type = "Protein";
                 unitLength = " aa";
                 break;
             default:
@@ -455,47 +474,39 @@ public class BlastUI extends javax.swing.JFrame {
                 unitLength = " N/A";
         }
         if (!isFastaFormat) {
-            fastaSeq = header + type +" | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
+            fastaSeq = header + type + " | " + seqLength + unitLength + "\n" + fastaSeq.toUpperCase();
         }
 
-       
 
-       
+
+
         seqArea.setText(fastaSeq);
         /*
-        String seqText = seqArea.getText();
-        int index = seqText.indexOf(">");
-
-        //if the first character isnt a >, then the string isnt in fasta
-        boolean isFastaFormat = index != -1;
-        int count = 0;
-        String header = "";
-        int seqLength = 0;
-        String sequence = "";
-        String fastaSeq = "";
-
-        //is it in fasta format?
-        if (isFastaFormat) {
-            count++;
-            //if it is in fasta format, just grab the sequence
-            int returnIndex = seqText.indexOf("\n");
-            //
-            header = seqText.substring(0, returnIndex);
-            fastaSeq = seqText.substring(returnIndex + 1, seqText.length()).replaceAll("\\s", "").toLowerCase();
-            fastaSeq = seqText;
-        } else {
-            seqText = seqText.replaceAll("\\s", "");
-            fastaSeq = seqText.toLowerCase();
-            header = "> Sequence " + count;
-            seqLength = seqText.length();
-        }
-        if (!isFastaFormat) {
-            fastaSeq = header + " | " + seqLength + "\n" + fastaSeq;
-        }
-        seqArea.setText(fastaSeq);
-*/
+         * String seqText = seqArea.getText(); int index = seqText.indexOf(">");
+         *
+         * //if the first character isnt a >, then the string isnt in fasta
+         * boolean isFastaFormat = index != -1; int count = 0; String header =
+         * ""; int seqLength = 0; String sequence = ""; String fastaSeq = "";
+         *
+         * //is it in fasta format? if (isFastaFormat) { count++; //if it is in
+         * fasta format, just grab the sequence int returnIndex =
+         * seqText.indexOf("\n"); // header = seqText.substring(0, returnIndex);
+         * fastaSeq = seqText.substring(returnIndex + 1,
+         * seqText.length()).replaceAll("\\s", "").toLowerCase(); fastaSeq =
+         * seqText; } else { seqText = seqText.replaceAll("\\s", ""); fastaSeq =
+         * seqText.toLowerCase(); header = "> Sequence " + count; seqLength =
+         * seqText.length(); } if (!isFastaFormat) { fastaSeq = header + " | " +
+         * seqLength + "\n" + fastaSeq; } seqArea.setText(fastaSeq);
+         */
     }//GEN-LAST:event_seqAreaFocusLost
 
+    private void enableButtons(int typeofSeq) {
+        if (typeofSeq == TYPE_DNA || typeofSeq == TYPE_RNA) { //set blastn
+        } else if (typeofSeq == TYPE_PROTEIN) {     //set blastp
+        } else { //set none
+        }
+
+    }
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
         JOptionPane.showMessageDialog(BlastUI.this, APP_NAME + " " + APP_Version,
                 "About " + APP_NAME, JOptionPane.INFORMATION_MESSAGE);
